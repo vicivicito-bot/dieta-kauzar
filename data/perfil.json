@@ -1,0 +1,13 @@
+{
+  "nombre": "",
+  "sexo": "mujer",
+  "edad": 30,
+  "altura_cm": 160,
+  "peso_kg": 60,
+  "peso_objetivo_kg": 55,
+  "actividad": "sedentaria",
+  "kcal_minimo": 1200,
+  "aove_max_g": 25,
+  "excluidos": ["queso fresco", "requesón", "cottage", "pimiento", "maíz", "azúcar"],
+  "con_alternativa_obligatoria": ["salmon"]
+}

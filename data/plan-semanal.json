@@ -1,0 +1,12 @@
+{
+  "nombre": "Semana base",
+  "dias": [
+    { "dia": "Lunes",     "desayuno": "des-tostada-pavo",  "media_manana": "mm-manzana-almendras",   "comida": "com-pollo-arroz",            "merienda": "mer-yogur-proteico",  "cena": "cen-merluza-crema" },
+    { "dia": "Martes",    "desayuno": "des-yogur-avena",   "media_manana": "mm-kiwi-nueces",         "comida": "com-lentejas",               "merienda": "mer-yogures-0",       "cena": "cen-tortilla-espinacas" },
+    { "dia": "Miércoles", "desayuno": "des-tostada-huevo", "media_manana": "mm-naranja-almendras",   "comida": "com-salmon-batata",          "merienda": "mer-yogur-arandanos", "cena": "cen-ensalada-atun-huevo" },
+    { "dia": "Jueves",    "desayuno": "des-tostada-jamon", "media_manana": "mm-pera-almendras",      "comida": "com-ternera-quinoa",         "merienda": "mer-yogur-proteico",  "cena": "cen-calamar-calabaza" },
+    { "dia": "Viernes",   "desayuno": "des-tortilla",      "media_manana": "mm-manzana-almendras",   "comida": "com-pavo-curry",             "merienda": "mer-yogures-0",       "cena": "cen-lubina-berenjena" },
+    { "dia": "Sábado",    "desayuno": "des-porridge",      "media_manana": "mm-pera-almendras",      "comida": "com-ensalada-quinoa-gambas", "merienda": "mer-yogures-0"    ,   "cena": "cen-salmon-ensalada" },
+    { "dia": "Domingo",   "desayuno": "des-tostada-atun",  "media_manana": "mm-fresas-nueces",       "comida": "com-ternera-patata",         "merienda": "mer-yogur-proteico",  "cena": "cen-lenguado-brocoli" }
+  ]
+}

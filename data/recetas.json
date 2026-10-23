@@ -1,0 +1,211 @@
+[
+  {
+    "id": "des-tostada-pavo", "tipo": "desayuno", "nombre": "Tostada integral con pavo y tomate", "tiempo": 5,
+    "ingredientes": [["cafe", 200], ["bebida_soja", 150], ["pan", 40], ["pavo_fiambre", 60], ["tomate", 40], ["aove", 5]],
+    "pasos": ["Prepara el café o té con la bebida de soja (sin azúcar; edulcorante si quieres).", "Tuesta el pan, ralla o corta el tomate encima y añade la cucharadita de AOVE.", "Cubre con el pavo."]
+  },
+  {
+    "id": "des-tostada-huevo", "tipo": "desayuno", "nombre": "Tostada con huevo revuelto y espinacas", "tiempo": 8,
+    "ingredientes": [["cafe", 200], ["bebida_soja", 150], ["pan", 35], ["huevo", 60], ["espinacas", 30], ["aove", 5]],
+    "pasos": ["Saltea las espinacas 1 minuto con el AOVE.", "Añade el huevo batido y remueve hasta cuajar.", "Sírvelo sobre la tostada. Acompaña con el café con bebida de soja."]
+  },
+  {
+    "id": "des-tostada-jamon", "tipo": "desayuno", "nombre": "Tostada con jamón y aguacate", "tiempo": 5,
+    "ingredientes": [["cafe", 200], ["bebida_soja", 150], ["pan", 40], ["jamon", 35], ["aguacate", 30], ["tomate", 30]],
+    "pasos": ["Tuesta el pan y unta el aguacate machacado.", "Añade unas rodajas de tomate y el jamón sin la grasa visible.", "Acompaña con el café con bebida de soja."]
+  },
+  {
+    "id": "des-porridge", "tipo": "desayuno", "nombre": "Porridge de avena con fresas y nueces", "tiempo": 7,
+    "ingredientes": [["cafe", 200], ["leche_desnatada", 200], ["avena", 40], ["fresas", 80], ["nueces", 5], ["especias", 1], ["edulcorante", 2]],
+    "pasos": ["Cuece la avena con la leche 3-4 minutos removiendo.", "Añade canela y eritritol al gusto.", "Cubre con las fresas troceadas y la nuez picada. Café solo o té aparte."]
+  },
+  {
+    "id": "des-tortilla", "tipo": "desayuno", "nombre": "Tortilla francesa con tostada y tomate", "tiempo": 8,
+    "ingredientes": [["cafe", 200], ["bebida_soja", 100], ["huevo", 60], ["clara", 60], ["pan", 35], ["tomate", 50], ["aove", 3]],
+    "pasos": ["Bate el huevo con la clara y una pizca de sal.", "Cuaja la tortilla en sartén antiadherente con unas gotas de AOVE.", "Acompaña con la tostada y el tomate en rodajas."]
+  },
+  {
+    "id": "des-yogur-avena", "tipo": "desayuno", "nombre": "Bol de yogur proteico con avena y arándanos", "tiempo": 3,
+    "ingredientes": [["cafe", 200], ["bebida_soja", 100], ["yogur_proteico", 160], ["avena", 25], ["arandanos", 60], ["almendras", 5], ["especias", 1]],
+    "pasos": ["Pon el yogur en un bol con canela.", "Añade la avena, los arándanos y las almendras picadas.", "Acompaña con el café con bebida de soja."]
+  },
+  {
+    "id": "des-tostada-atun", "tipo": "desayuno", "nombre": "Tostada con atún y tomate", "tiempo": 5,
+    "ingredientes": [["cafe", 200], ["bebida_soja", 150], ["pan", 40], ["atun", 52], ["tomate", 40], ["aove", 5]],
+    "pasos": ["Tuesta el pan con el tomate rallado y la cucharadita de AOVE.", "Cubre con el atún escurrido y orégano.", "Acompaña con el café con bebida de soja."]
+  },
+
+  {
+    "id": "mm-manzana-almendras", "tipo": "media_manana", "nombre": "Manzana y almendras", "tiempo": 0,
+    "ingredientes": [["manzana", 130], ["almendras", 5]],
+    "pasos": ["1 manzana pequeña + 4-5 almendras."]
+  },
+  {
+    "id": "mm-kiwi-nueces", "tipo": "media_manana", "nombre": "Kiwi y nueces", "tiempo": 0,
+    "ingredientes": [["kiwi", 75], ["nueces", 7]],
+    "pasos": ["1 kiwi + 2 nueces (4 mitades)."]
+  },
+  {
+    "id": "mm-mandarina-almendras", "tipo": "media_manana", "nombre": "Mandarina y almendras", "tiempo": 0,
+    "ingredientes": [["mandarina", 80], ["almendras", 7]],
+    "pasos": ["1 mandarina + 6 almendras."]
+  },
+  {
+    "id": "mm-fresas-nueces", "tipo": "media_manana", "nombre": "Fresas y nueces", "tiempo": 0,
+    "ingredientes": [["fresas", 150], ["nueces", 6]],
+    "pasos": ["Un bol de fresas (unas 10) + 2 nueces."]
+  },
+  {
+    "id": "mm-naranja-almendras", "tipo": "media_manana", "nombre": "Naranja y almendras", "tiempo": 0,
+    "ingredientes": [["naranja", 130], ["almendras", 5]],
+    "pasos": ["1 naranja pequeña + 4-5 almendras."]
+  },
+  {
+    "id": "mm-pera-almendras", "tipo": "media_manana", "nombre": "Pera y almendras", "tiempo": 0,
+    "ingredientes": [["pera", 130], ["almendras", 4]],
+    "pasos": ["1 pera pequeña + 4 almendras."]
+  },
+
+  {
+    "id": "com-pollo-arroz", "tipo": "comida", "nombre": "Pollo a la plancha con arroz integral y brócoli", "tiempo": 20,
+    "ingredientes": [["pollo", 140], ["arroz", 100], ["brocoli", 150], ["aove", 10], ["especias", 1]],
+    "pasos": ["Cuece el brócoli al vapor 6-7 minutos.", "Haz el pollo a la plancha con pimentón dulce, ajo en polvo y sal.", "Sirve con el arroz cocido y aliña todo con el AOVE en crudo."]
+  },
+  {
+    "id": "com-lentejas", "tipo": "comida", "nombre": "Lentejas estofadas con verduras y pollo", "tiempo": 25,
+    "ingredientes": [["lentejas", 200], ["pollo", 60], ["zanahoria", 50], ["cebolla", 40], ["calabacin", 100], ["tomate_triturado", 50], ["aove", 8], ["especias", 1]],
+    "pasos": ["Sofríe la cebolla y la zanahoria picadas con el AOVE.", "Añade el pollo en dados y dóralo, luego el calabacín y el tomate.", "Incorpora las lentejas (de bote, lavadas), comino, laurel y un vaso de agua o caldo. Cuece 10 minutos."]
+  },
+  {
+    "id": "com-ternera-quinoa", "tipo": "comida", "nombre": "Ternera salteada con quinoa y champiñones", "tiempo": 20,
+    "ingredientes": [["ternera", 130], ["quinoa", 100], ["champinon", 100], ["calabacin", 100], ["aove", 10], ["ajo", 5]],
+    "pasos": ["Saltea la ternera en tiras a fuego fuerte con la mitad del AOVE y reserva.", "En la misma sartén saltea ajo, champiñones y calabacín.", "Junta todo con la quinoa cocida y el resto del AOVE. Un chorrito de salsa de soja si quieres."]
+  },
+  {
+    "id": "com-merluza-patata", "tipo": "comida", "nombre": "Merluza al horno con patata y judías verdes", "tiempo": 30,
+    "ingredientes": [["merluza", 170], ["patata", 150], ["judias", 150], ["aove", 10], ["ajo", 5], ["limon", 10]],
+    "pasos": ["Hornea la patata en rodajas finas 15 minutos a 200 °C con la mitad del AOVE.", "Pon la merluza encima con ajo, perejil y limón y hornea 10-12 minutos más.", "Cuece las judías 8 minutos y aliña con el resto del AOVE."]
+  },
+  {
+    "id": "com-garbanzos", "tipo": "comida", "nombre": "Garbanzos salteados con espinacas y huevo", "tiempo": 15,
+    "ingredientes": [["garbanzos", 150], ["espinacas", 150], ["huevo", 60], ["tomate", 50], ["aove", 7], ["especias", 1]],
+    "pasos": ["Cuece el huevo 10 minutos.", "Saltea ajo y espinacas con el AOVE; añade los garbanzos escurridos, comino y pimentón.", "Sirve con el huevo troceado y el tomate."]
+  },
+  {
+    "id": "com-pavo-curry", "tipo": "comida", "nombre": "Pavo al curry con arroz integral y calabacín", "tiempo": 20,
+    "ingredientes": [["pavo", 140], ["arroz", 100], ["calabacin", 150], ["cebolla", 40], ["bebida_soja", 50], ["aove", 10], ["especias", 1]],
+    "pasos": ["Pocha la cebolla con el AOVE y dora el pavo en dados.", "Añade el calabacín, una cucharadita de curry y la bebida de soja. Cuece 5 minutos.", "Sirve con el arroz integral."]
+  },
+  {
+    "id": "com-salmon-batata", "tipo": "comida", "nombre": "Salmón al horno con batata y espárragos", "tiempo": 30,
+    "ingredientes": [["salmon", 120], ["batata", 120], ["esparragos", 150], ["aove", 5], ["limon", 10]],
+    "pasos": ["Hornea la batata en dados 15 minutos a 200 °C con el AOVE.", "Añade el pescado y los espárragos, con limón, eneldo y sal, y hornea 12 minutos más."],
+    "alternativa": {
+      "nombre": "Dorada al horno con batata y espárragos",
+      "nota": "La dorada es más magra, por eso lleva más cantidad y una cucharadita extra de AOVE para igualar las calorías.",
+      "ingredientes": [["dorada", 170], ["batata", 120], ["esparragos", 150], ["aove", 10], ["limon", 10]]
+    }
+  },
+  {
+    "id": "com-ensalada-quinoa-gambas", "tipo": "comida", "nombre": "Ensalada templada de quinoa con gambas", "tiempo": 15,
+    "ingredientes": [["gambas", 150], ["quinoa", 100], ["canonigos", 40], ["tomate", 100], ["pepino", 80], ["aguacate", 30], ["aove", 7], ["ajo", 5], ["limon", 10]],
+    "pasos": ["Saltea las gambas con ajo y unas gotas del AOVE.", "Mezcla la quinoa cocida con canónigos, tomate, pepino y aguacate.", "Añade las gambas templadas y aliña con limón y el resto del AOVE."]
+  },
+  {
+    "id": "com-bacalao-tomate", "tipo": "comida", "nombre": "Bacalao con tomate, calabacín y patata", "tiempo": 30,
+    "ingredientes": [["bacalao", 160], ["patata", 150], ["tomate_triturado", 100], ["cebolla", 50], ["calabacin", 100], ["aove", 10]],
+    "pasos": ["Cuece la patata en rodajas 12 minutos.", "Sofríe la cebolla y el calabacín con el AOVE, añade el tomate y cuece 8 minutos.", "Pon el bacalao en la salsa, tapa y cocina 6-8 minutos. Sirve con la patata."]
+  },
+  {
+    "id": "com-ternera-patata", "tipo": "comida", "nombre": "Ternera a la plancha con patata asada y brócoli", "tiempo": 30,
+    "ingredientes": [["ternera", 130], ["patata", 150], ["brocoli", 150], ["aove", 10], ["especias", 1]],
+    "pasos": ["Asa la patata en gajos (horno o freidora de aire) con la mitad del AOVE y romero.", "Cuece el brócoli al vapor.", "Haz la ternera a la plancha y aliña el brócoli con el resto del AOVE."]
+  },
+  {
+    "id": "com-arroz-sepia", "tipo": "comida", "nombre": "Arroz integral con sepia y verduras", "tiempo": 25,
+    "ingredientes": [["sepia", 180], ["arroz", 100], ["calabacin", 100], ["tomate_triturado", 50], ["cebolla", 40], ["aove", 10], ["ajo", 5]],
+    "pasos": ["Sofríe ajo y cebolla con el AOVE; añade la sepia troceada y dórala.", "Añade calabacín y tomate y cocina 5 minutos.", "Incorpora el arroz integral cocido, mezcla y sirve con perejil."]
+  },
+
+  {
+    "id": "mer-yogur-proteico", "tipo": "merienda", "nombre": "Yogur proteico con canela y fresas", "tiempo": 1,
+    "ingredientes": [["yogur_proteico", 160], ["fresas", 30], ["especias", 1], ["edulcorante", 2]],
+    "pasos": ["Yogur proteico con canela, eritritol al gusto y unas fresas."]
+  },
+  {
+    "id": "mer-yogures-0", "tipo": "merienda", "nombre": "Dos yogures 0% con canela", "tiempo": 1,
+    "ingredientes": [["yogur_0", 250], ["especias", 1], ["edulcorante", 2]],
+    "pasos": ["2 yogures naturales 0% con canela y eritritol al gusto."]
+  },
+  {
+    "id": "mer-yogur-arandanos", "tipo": "merienda", "nombre": "Yogur 0% con arándanos y nuez", "tiempo": 1,
+    "ingredientes": [["yogur_0", 125], ["arandanos", 40], ["nueces", 4], ["especias", 1]],
+    "pasos": ["Yogur natural 0% con arándanos, nuez picada y canela."]
+  },
+  {
+    "id": "mer-rollitos-pavo", "tipo": "merienda", "nombre": "Rollitos de pavo con pepino y tomate", "tiempo": 3,
+    "ingredientes": [["pavo_fiambre", 70], ["pepino", 100], ["tomate", 50]],
+    "pasos": ["Enrolla bastones de pepino en las lonchas de pavo.", "Acompaña con unos tomates cherry y una infusión."]
+  },
+
+  {
+    "id": "cen-merluza-crema", "tipo": "cena", "nombre": "Merluza a la plancha con crema de calabacín", "tiempo": 25,
+    "ingredientes": [["merluza", 180], ["calabacin", 250], ["cebolla", 40], ["puerro", 50], ["patata", 50], ["caldo", 200], ["aove", 10]],
+    "pasos": ["Pocha cebolla y puerro con la mitad del AOVE; añade calabacín, patata y el caldo. Cuece 15 minutos y tritura (sin nata ni quesitos).", "Haz la merluza a la plancha con el resto del AOVE, ajo y perejil."]
+  },
+  {
+    "id": "cen-tortilla-espinacas", "tipo": "cena", "nombre": "Tortilla de espinacas y champiñones con ensalada", "tiempo": 15,
+    "ingredientes": [["huevo", 120], ["espinacas", 80], ["champinon", 80], ["lechuga", 60], ["tomate", 100], ["aove", 10]],
+    "pasos": ["Saltea champiñones y espinacas con la mitad del AOVE.", "Añade los 2 huevos batidos y cuaja la tortilla.", "Acompaña con lechuga y tomate aliñados con el resto del AOVE."]
+  },
+  {
+    "id": "cen-ensalada-atun-huevo", "tipo": "cena", "nombre": "Ensalada grande de atún y huevo", "tiempo": 12,
+    "ingredientes": [["atun", 104], ["huevo", 60], ["lechuga", 80], ["tomate", 120], ["pepino", 80], ["cebolla", 20], ["aove", 10]],
+    "pasos": ["Cuece el huevo 10 minutos.", "Mezcla lechuga, tomate, pepino y cebolla.", "Añade 2 latas de atún escurrido y el huevo; aliña con el AOVE y vinagre."]
+  },
+  {
+    "id": "cen-lubina-berenjena", "tipo": "cena", "nombre": "Lubina al horno con berenjena y tomate", "tiempo": 30,
+    "ingredientes": [["lubina", 160], ["berenjena", 200], ["tomate", 100], ["cebolla", 40], ["aove", 10], ["limon", 10]],
+    "pasos": ["Hornea la berenjena, el tomate y la cebolla en rodajas 15 minutos a 200 °C con la mitad del AOVE.", "Pon la lubina encima con limón y el resto del AOVE y hornea 12 minutos más."]
+  },
+  {
+    "id": "cen-calamar-calabaza", "tipo": "cena", "nombre": "Calamares a la plancha con crema de calabaza", "tiempo": 25,
+    "ingredientes": [["calamar", 180], ["calabaza", 200], ["zanahoria", 50], ["cebolla", 40], ["caldo", 200], ["aove", 10]],
+    "pasos": ["Cuece calabaza, zanahoria y cebolla en el caldo 15 minutos y tritura con la mitad del AOVE.", "Haz los calamares a la plancha con ajo, perejil y el resto del AOVE."]
+  },
+  {
+    "id": "cen-gambas-calabacin", "tipo": "cena", "nombre": "Gambas al ajillo con espirales de calabacín", "tiempo": 15,
+    "ingredientes": [["gambas", 160], ["calabacin", 300], ["champinon", 80], ["tomate", 100], ["ajo", 5], ["aove", 10]],
+    "pasos": ["Corta el calabacín en espirales o tiras finas.", "Dora el ajo laminado en el AOVE, añade las gambas y los champiñones.", "Incorpora el calabacín 2 minutos al final. Acompaña con tomate en rodajas."]
+  },
+  {
+    "id": "cen-dorada-canonigos", "tipo": "cena", "nombre": "Dorada al horno con ensalada de canónigos", "tiempo": 25,
+    "ingredientes": [["dorada", 170], ["canonigos", 50], ["tomate", 100], ["pepino", 80], ["aguacate", 20], ["aove", 10], ["limon", 10]],
+    "pasos": ["Hornea la dorada con limón y la mitad del AOVE 15-18 minutos a 200 °C.", "Prepara la ensalada y aliña con el resto del AOVE."]
+  },
+  {
+    "id": "cen-lenguado-brocoli", "tipo": "cena", "nombre": "Lenguado con crema de brócoli", "tiempo": 25,
+    "ingredientes": [["lenguado", 200], ["brocoli", 200], ["puerro", 50], ["caldo", 200], ["aove", 10]],
+    "pasos": ["Cuece brócoli y puerro en el caldo 10 minutos y tritura con la mitad del AOVE.", "Haz el lenguado a la plancha con el resto del AOVE y limón."]
+  },
+  {
+    "id": "cen-revuelto-gambas", "tipo": "cena", "nombre": "Revuelto de gambas y espárragos con tomate", "tiempo": 15,
+    "ingredientes": [["huevo", 60], ["clara", 90], ["gambas", 80], ["esparragos", 150], ["tomate", 100], ["ajo", 5], ["aove", 8]],
+    "pasos": ["Saltea ajo, espárragos troceados y gambas con el AOVE.", "Añade el huevo y las claras batidos y remueve hasta cuajar.", "Acompaña con tomate en rodajas."]
+  },
+  {
+    "id": "cen-salmon-ensalada", "tipo": "cena", "nombre": "Salmón a la plancha con ensalada", "tiempo": 15,
+    "ingredientes": [["salmon", 120], ["lechuga", 80], ["tomate", 100], ["pepino", 80], ["aove", 5], ["limon", 10]],
+    "pasos": ["Haz el pescado a la plancha sin aceite añadido, con sal y eneldo.", "Prepara la ensalada y aliña con el AOVE y limón."],
+    "alternativa": {
+      "nombre": "Bacalao a la plancha con ensalada y aguacate",
+      "nota": "El bacalao es muy magro: lleva aguacate y una cucharadita más de AOVE para igualar las calorías.",
+      "ingredientes": [["bacalao", 180], ["lechuga", 80], ["tomate", 100], ["pepino", 80], ["aguacate", 30], ["aove", 10], ["limon", 10]]
+    }
+  },
+  {
+    "id": "cen-pavo-champinones", "tipo": "cena", "nombre": "Pechuga de pavo con crema de champiñones", "tiempo": 20,
+    "ingredientes": [["pavo", 140], ["champinon", 200], ["cebolla", 40], ["bebida_soja", 100], ["aove", 10]],
+    "pasos": ["Pocha la cebolla con la mitad del AOVE, añade los champiñones y cocina 8 minutos.", "Añade la bebida de soja, cuece 3 minutos y tritura.", "Haz el pavo a la plancha con el resto del AOVE y sírvelo con la crema."]
+  }
+]

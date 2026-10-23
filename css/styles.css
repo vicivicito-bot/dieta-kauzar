@@ -1,0 +1,205 @@
+:root {
+  --fondo: #f4f6f2;
+  --superficie: #ffffff;
+  --texto: #1d2420;
+  --suave: #5f6b64;
+  --borde: #e2e7e1;
+  --acento: #2f7d5b;
+  --acento-suave: #e3f1ea;
+  --aviso: #b4541a;
+  --aviso-suave: #fbeadf;
+  --sombra: 0 1px 2px rgb(0 0 0 / 0.05), 0 2px 8px rgb(0 0 0 / 0.04);
+  --radio: 16px;
+  color-scheme: light;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --fondo: #0f1512;
+    --superficie: #19221d;
+    --texto: #e6ece8;
+    --suave: #9aa8a0;
+    --borde: #29342e;
+    --acento: #5cc394;
+    --acento-suave: #1c3328;
+    --aviso: #f0a070;
+    --aviso-suave: #3a2418;
+    --sombra: none;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --fondo: #0f1512;
+  --superficie: #19221d;
+  --texto: #e6ece8;
+  --suave: #9aa8a0;
+  --borde: #29342e;
+  --acento: #5cc394;
+  --acento-suave: #1c3328;
+  --aviso: #f0a070;
+  --aviso-suave: #3a2418;
+  --sombra: none;
+  color-scheme: dark;
+}
+
+* { box-sizing: border-box; }
+html { -webkit-text-size-adjust: 100%; }
+body {
+  margin: 0;
+  background: var(--fondo);
+  color: var(--texto);
+  font: 16px/1.45 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  -webkit-tap-highlight-color: transparent;
+}
+main {
+  max-width: 640px;
+  margin: 0 auto;
+  padding: calc(env(safe-area-inset-top) + 16px) 16px calc(env(safe-area-inset-bottom) + 96px);
+}
+h1 { font-size: 1.5rem; margin: 0; line-height: 1.2; }
+h1::first-letter { text-transform: uppercase; }
+h2 { font-size: 1rem; margin: 0 0 6px; }
+p { margin: 0 0 8px; }
+button, input, select { font: inherit; color: inherit; }
+.sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); }
+
+.cabecera { margin: 4px 0 16px; }
+.volver { display: inline-block; color: var(--acento); text-decoration: none; margin-bottom: 4px; font-weight: 600; }
+.pie { color: var(--suave); font-size: 0.875rem; text-align: center; margin: 16px 0; }
+.nota { color: var(--suave); font-size: 0.875rem; }
+
+/* Resumen del día */
+.resumen, .tarjeta {
+  background: var(--superficie);
+  border-radius: var(--radio);
+  box-shadow: var(--sombra);
+  padding: 16px;
+  margin-bottom: 16px;
+}
+.cifra { font-size: 1.05rem; margin-bottom: 8px; }
+.cifra b { font-size: 1.75rem; font-variant-numeric: tabular-nums; }
+.barra { height: 8px; border-radius: 99px; background: var(--acento-suave); overflow: hidden; margin-bottom: 12px; }
+.barra span { display: block; height: 100%; background: var(--acento); border-radius: inherit; transition: width 0.3s; }
+.macros { display: flex; flex-wrap: wrap; gap: 6px 14px; font-size: 0.875rem; color: var(--suave); }
+.macros b { color: var(--texto); font-variant-numeric: tabular-nums; }
+.macros:not(.compacto) { padding-top: 12px; border-top: 1px solid var(--borde); }
+.aove { font-size: 0.875rem; color: var(--suave); margin: 10px 0 0; }
+.aove.aviso { color: var(--aviso); }
+
+/* Tarjetas de comida */
+.comida {
+  position: relative;
+  background: var(--superficie);
+  border-radius: var(--radio);
+  box-shadow: var(--sombra);
+  margin-bottom: 10px;
+}
+.comida.hecha summary .titulo > span { text-decoration: line-through; color: var(--suave); }
+summary {
+  list-style: none;
+  display: grid;
+  grid-template-columns: 40px 1fr auto;
+  gap: 12px;
+  align-items: center;
+  padding: 14px 16px;
+  cursor: pointer;
+}
+.comida:has(.check) summary { padding-right: 60px; }
+summary::-webkit-details-marker { display: none; }
+.icono { font-size: 1.5rem; text-align: center; }
+.titulo { display: flex; flex-direction: column; min-width: 0; }
+.titulo small { color: var(--suave); font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.04em; }
+.titulo > span { font-weight: 600; }
+.chip {
+  align-self: flex-start;
+  font-style: normal;
+  font-size: 0.75rem;
+  color: var(--acento);
+  background: var(--acento-suave);
+  border-radius: 99px;
+  padding: 2px 8px;
+  margin-top: 4px;
+}
+.kcal { text-align: right; font-weight: 700; font-variant-numeric: tabular-nums; line-height: 1.1; }
+.kcal small { display: block; font-weight: 400; font-size: 0.75rem; color: var(--suave); }
+.cuerpo { padding: 0 16px 16px; }
+
+.check { position: absolute; top: 10px; right: 10px; width: 44px; height: 44px; display: grid; place-items: center; cursor: pointer; }
+.check input { position: absolute; opacity: 0; width: 100%; height: 100%; margin: 0; cursor: pointer; }
+.check span[aria-hidden] {
+  width: 26px; height: 26px; border-radius: 50%;
+  border: 2px solid var(--borde);
+  display: grid; place-items: center;
+  transition: background 0.15s, border-color 0.15s;
+}
+.check input:checked + span { background: var(--acento); border-color: var(--acento); }
+.check input:checked + span::after { content: "✓"; color: var(--superficie); font-weight: 700; font-size: 0.9rem; }
+.check input:focus-visible + span { outline: 2px solid var(--acento); outline-offset: 2px; }
+/* Con casilla, las kcal van debajo del círculo para que no se pisen. */
+.comida:has(.check) .kcal { margin-top: 34px; }
+
+.ingredientes { list-style: none; padding: 0; margin: 0 0 12px; }
+.ingredientes li { display: flex; justify-content: space-between; gap: 12px; padding: 6px 0; border-bottom: 1px solid var(--borde); font-size: 0.95rem; }
+.cant { color: var(--suave); white-space: nowrap; font-variant-numeric: tabular-nums; }
+.pasos { padding-left: 20px; margin: 0 0 12px; }
+.pasos li { margin-bottom: 6px; }
+
+.alternativa { margin-bottom: 12px; }
+.segmentado { display: grid; grid-template-columns: 1fr 1fr; background: var(--fondo); border-radius: 12px; padding: 4px; gap: 4px; }
+.segmentado button {
+  border: 0; background: transparent; border-radius: 9px; padding: 8px 6px; cursor: pointer;
+  font-size: 0.875rem; color: var(--suave);
+}
+.segmentado button[aria-pressed="true"] { background: var(--superficie); color: var(--texto); font-weight: 600; box-shadow: var(--sombra); }
+.alternativa .nota { margin: 8px 0 0; }
+
+/* Semana */
+.semana { list-style: none; padding: 0; margin: 0; }
+.semana a {
+  display: grid; grid-template-columns: 44px 1fr auto; gap: 12px; align-items: center;
+  background: var(--superficie); border-radius: var(--radio); box-shadow: var(--sombra);
+  padding: 14px 16px; margin-bottom: 10px; color: inherit; text-decoration: none;
+}
+.semana a.hoy { outline: 2px solid var(--acento); }
+.semana .d { font-weight: 700; color: var(--acento); }
+.platos { display: flex; flex-direction: column; min-width: 0; }
+.platos span, .platos small { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.platos small { color: var(--suave); }
+
+/* Recetas */
+input[type="search"], .formulario input, .formulario select {
+  width: 100%; padding: 12px 14px; border-radius: 12px; border: 1px solid var(--borde);
+  background: var(--superficie); margin-bottom: 12px;
+}
+.chips { display: flex; gap: 8px; overflow-x: auto; padding-bottom: 12px; margin: 0 -16px; padding-inline: 16px; scrollbar-width: none; }
+.chips button {
+  flex: none; border: 1px solid var(--borde); background: var(--superficie);
+  border-radius: 99px; padding: 6px 14px; cursor: pointer; font-size: 0.875rem;
+}
+.chips button[aria-pressed="true"] { background: var(--acento); border-color: var(--acento); color: var(--superficie); }
+
+/* Perfil */
+.formulario { display: grid; grid-template-columns: 1fr 1fr; gap: 0 12px; }
+.formulario label { font-size: 0.85rem; color: var(--suave); }
+.formulario input, .formulario select { margin-top: 4px; color: var(--texto); }
+.formulario .ancho { grid-column: 1 / -1; }
+.numeros { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+.numeros small { display: block; color: var(--suave); font-size: 0.8rem; }
+.numeros b { font-size: 1.4rem; font-variant-numeric: tabular-nums; }
+
+.alerta { background: var(--aviso-suave); color: var(--aviso); border-radius: 12px; padding: 12px 16px; margin-bottom: 16px; font-size: 0.9rem; }
+.alerta ul { margin: 6px 0 0; padding-left: 18px; }
+
+/* Barra inferior */
+nav {
+  position: fixed; inset: auto 0 0 0;
+  display: grid; grid-template-columns: repeat(4, 1fr);
+  background: var(--superficie); border-top: 1px solid var(--borde);
+  padding: 6px 4px calc(env(safe-area-inset-bottom) + 6px);
+}
+nav a {
+  display: flex; flex-direction: column; align-items: center; gap: 2px;
+  font-size: 0.72rem; color: var(--suave); text-decoration: none; padding: 4px 0;
+}
+nav a span { font-size: 1.3rem; filter: grayscale(1); opacity: 0.7; }
+nav a[aria-current="page"] { color: var(--acento); font-weight: 600; }
+nav a[aria-current="page"] span { filter: none; opacity: 1; }
