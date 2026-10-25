@@ -6,8 +6,10 @@
   "peso_kg": 60,
   "peso_objetivo_kg": 55,
   "actividad": "sedentaria",
+  "ritmo": "normal",
   "kcal_minimo": 1200,
   "aove_max_g": 25,
+  "proteina_min_g": 90,
   "excluidos": ["queso fresco", "requesón", "cottage", "pimiento", "maíz", "azúcar"],
   "con_alternativa_obligatoria": ["salmon"]
 }

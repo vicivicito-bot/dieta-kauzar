@@ -15,6 +15,15 @@ export const ACTIVIDAD = {
   alta: { nombre: 'Alta (6-7 días de ejercicio)', factor: 1.725 },
 };
 
+// Déficit diario según lo rápido que quiera ir (7.700 kcal ≈ 1 kg).
+export const RITMO = {
+  suave: { nombre: 'Suave (≈ 250 g por semana)', deficit: 275 },
+  normal: { nombre: 'Normal (≈ 500 g por semana)', deficit: 550 },
+};
+
+// Parte de las kcal del día que va a cada comida (suma 1).
+export const REPARTO = { desayuno: 0.23, media_manana: 0.075, comida: 0.33, merienda: 0.085, cena: 0.28 };
+
 const KCAL_POR_KG_GRASA = 7700;
 
 // Suma kcal y macros de una lista de [idAlimento, gramos].
@@ -48,6 +57,55 @@ export function metabolismoBasal({ sexo, edad, altura_cm, peso_kg }) {
 export function gastoTotal(perfil) {
   const factor = (ACTIVIDAD[perfil.actividad] || ACTIVIDAD.sedentaria).factor;
   return metabolismoBasal(perfil) * factor;
+}
+
+// Kcal diarias del menú: gasto menos el déficit del ritmo, nunca por debajo del mínimo.
+// Con el objetivo alcanzado, mantenimiento.
+export function kcalObjetivo(perfil) {
+  const gasto = gastoTotal(perfil);
+  const meta = perfil.peso_kg <= perfil.peso_objetivo_kg ? gasto : gasto - (RITMO[perfil.ritmo] || RITMO.normal).deficit;
+  return Math.max(perfil.kcal_minimo, Math.round(meta / 10) * 10);
+}
+
+// No se escalan: el aceite (tiene tope diario), los condimentos y el café.
+const SIN_ESCALAR = new Set(['aove', 'cafe', 'especias', 'edulcorante', 'caldo', 'limon', 'ajo']);
+
+// Ajusta las cantidades de una receta para acercarla a kcalMeta. Lo que se compra
+// por unidades (huevos, latas, yogures, fruta) queda en unidades enteras y el resto compensa.
+export function escalar(ingredientes, kcalMeta, alimentos) {
+  const kcal = (id, g) => (alimentos[id].kcal * g) / 100;
+  const limitar = (f) => Math.min(2.5, Math.max(0.5, f));
+  const unidades = (id, g) => {
+    const ud = alimentos[id].ud;
+    return ud && Math.round(g / ud) >= 1 && Math.abs(g / ud - Math.round(g / ud)) < 0.15;
+  };
+
+  let fijo = 0;
+  let variable = 0;
+  for (const [id, g] of ingredientes) {
+    if (SIN_ESCALAR.has(id)) fijo += kcal(id, g);
+    else variable += kcal(id, g);
+  }
+  if (variable <= 0) return ingredientes;
+  const f1 = limitar((kcalMeta - fijo) / variable);
+
+  const resultado = ingredientes.map(([id, g]) => ({ id, g, tipo: SIN_ESCALAR.has(id) ? 'fijo' : unidades(id, g) ? 'ud' : 'g' }));
+  let enUnidades = 0;
+  let continuo = 0;
+  for (const x of resultado) {
+    if (x.tipo === 'ud') {
+      const ud = alimentos[x.id].ud;
+      x.g = Math.max(1, Math.round((x.g * f1) / ud)) * ud;
+      enUnidades += kcal(x.id, x.g);
+    } else if (x.tipo === 'g') continuo += kcal(x.id, x.g);
+  }
+  const f2 = continuo ? limitar((kcalMeta - fijo - enUnidades) / continuo) : 1;
+  for (const x of resultado) {
+    if (x.tipo !== 'g') continue;
+    const g = x.g * f2;
+    x.g = g < 20 ? Math.max(1, Math.round(g)) : Math.round(g / 5) * 5;
+  }
+  return resultado.map((x) => [x.id, x.g]);
 }
 
 // Simula semana a semana, recalculando el gasto según baja el peso.

@@ -160,7 +160,8 @@ summary::-webkit-details-marker { display: none; }
   padding: 14px 16px; margin-bottom: 10px; color: inherit; text-decoration: none;
 }
 .semana a.hoy { outline: 2px solid var(--acento); }
-.semana .d { font-weight: 700; color: var(--acento); }
+.semana .d { font-weight: 700; color: var(--acento); line-height: 1.15; }
+.semana .d small { display: block; font-weight: 400; color: var(--suave); font-size: 0.8rem; }
 .platos { display: flex; flex-direction: column; min-width: 0; }
 .platos span, .platos small { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .platos small { color: var(--suave); }
@@ -171,11 +172,11 @@ input[type="search"], .formulario input, .formulario select {
   background: var(--superficie); margin-bottom: 12px;
 }
 .chips { display: flex; gap: 8px; overflow-x: auto; padding-bottom: 12px; margin: 0 -16px; padding-inline: 16px; scrollbar-width: none; }
-.chips button {
-  flex: none; border: 1px solid var(--borde); background: var(--superficie);
+.chips button, .chips a {
+  flex: none; color: inherit; text-decoration: none; border: 1px solid var(--borde); background: var(--superficie);
   border-radius: 99px; padding: 6px 14px; cursor: pointer; font-size: 0.875rem;
 }
-.chips button[aria-pressed="true"] { background: var(--acento); border-color: var(--acento); color: var(--superficie); }
+.chips [aria-pressed="true"] { background: var(--acento); border-color: var(--acento); color: var(--superficie); }
 
 /* Perfil */
 .formulario { display: grid; grid-template-columns: 1fr 1fr; gap: 0 12px; }
@@ -186,19 +187,48 @@ input[type="search"], .formulario input, .formulario select {
 .numeros small { display: block; color: var(--suave); font-size: 0.8rem; }
 .numeros b { font-size: 1.4rem; font-variant-numeric: tabular-nums; }
 
+/* Acciones de cada receta */
+.chip.aviso { color: var(--aviso); background: var(--aviso-suave); }
+.acciones { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 14px; }
+.acciones button, .botones button, .boton-ancho {
+  border: 1px solid var(--borde); background: var(--superficie); border-radius: 99px;
+  padding: 8px 14px; cursor: pointer; font-size: 0.875rem;
+}
+.acciones button[aria-pressed="true"] { background: var(--acento-suave); border-color: var(--acento); font-weight: 600; }
+.acciones .principal { background: var(--acento); border-color: var(--acento); color: var(--superficie); font-weight: 600; }
+.boton-ancho { display: block; width: 100%; padding: 12px; font-weight: 600; color: var(--acento); }
+
+/* Gustos */
+.gustos { list-style: none; padding: 0; margin: 0; }
+.gustos li { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 8px 0; border-bottom: 1px solid var(--borde); }
+.gustos li:last-child { border-bottom: 0; }
+.gustos li > span:first-child { min-width: 0; }
+.gustos small { display: block; color: var(--suave); font-size: 0.78rem; }
+.gustos li.vetado > span:first-child { color: var(--suave); text-decoration: line-through; }
+.botones { display: flex; gap: 6px; flex: none; }
+.botones button { min-width: 44px; min-height: 40px; padding: 6px 10px; filter: grayscale(1); opacity: 0.55; }
+.botones button[aria-pressed="true"] { filter: none; opacity: 1; background: var(--acento-suave); border-color: var(--acento); }
+.botones button[data-valor="no"][aria-pressed="true"] { background: var(--aviso-suave); border-color: var(--aviso); }
+.gustos .botones button:only-child { filter: none; opacity: 1; }
+
+.reparto { list-style: none; padding: 0; margin: 0 0 8px; }
+.reparto li { display: flex; justify-content: space-between; padding: 6px 0; border-bottom: 1px solid var(--borde); font-size: 0.95rem; }
+.numeros .destacado b { color: var(--acento); }
+
 .alerta { background: var(--aviso-suave); color: var(--aviso); border-radius: 12px; padding: 12px 16px; margin-bottom: 16px; font-size: 0.9rem; }
 .alerta ul { margin: 6px 0 0; padding-left: 18px; }
 
 /* Barra inferior */
 nav {
   position: fixed; inset: auto 0 0 0;
-  display: grid; grid-template-columns: repeat(4, 1fr);
+  display: grid; grid-template-columns: repeat(5, 1fr);
   background: var(--superficie); border-top: 1px solid var(--borde);
   padding: 6px 4px calc(env(safe-area-inset-bottom) + 6px);
 }
 nav a {
   display: flex; flex-direction: column; align-items: center; gap: 2px;
   font-size: 0.72rem; color: var(--suave); text-decoration: none; padding: 4px 0;
+  text-align: center; line-height: 1.2;
 }
 nav a span { font-size: 1.3rem; filter: grayscale(1); opacity: 0.7; }
 nav a[aria-current="page"] { color: var(--acento); font-weight: 600; }

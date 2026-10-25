@@ -1,15 +1,15 @@
 // Guarda la app en el móvil para que funcione sin conexión.
 // Al cambiar cualquier archivo, sube la versión para que se actualice.
-const VERSION = 'dieta-v1';
+const VERSION = 'dieta-v2';
 const ARCHIVOS = [
   './',
   'index.html',
   'css/styles.css',
   'js/app.js',
   'js/nutricion.js',
+  'js/menu.js',
   'data/alimentos.json',
   'data/recetas.json',
-  'data/plan-semanal.json',
   'data/perfil.json',
   'manifest.webmanifest',
   'icons/icon-192.png',
