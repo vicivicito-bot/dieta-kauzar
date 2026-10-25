@@ -1,5 +1,6 @@
 import {
-  TIPOS, ACTIVIDAD, RITMO, REPARTO, totales, sumar, metabolismoBasal, gastoTotal, kcalObjetivo, escalar, proyeccion, validar,
+  TIPOS, ACTIVIDAD, RITMO, REPARTO, EJERCICIOS, GRUPOS, ACTIVIDAD_DEVUELTA, totales, sumar, metabolismoBasal, gastoTotal,
+  kcalObjetivo, kcalActividad, escalar, equivalentes, proyeccion, validar,
 } from './nutricion.js';
 import { aleatorio, elegir, generarSemana } from './menu.js';
 
@@ -15,7 +16,7 @@ const NO_COMPRAR = new Set(['cafe', 'especias', 'edulcorante']);
 const LIQUIDOS = new Set(['bebida_soja', 'leche_desnatada', 'caldo']);
 
 let estado = {
-  hechos: {}, alternativas: {}, perfil: {}, ingredientes: {}, valoraciones: {}, semanas: {}, compra: {}, pesos: [],
+  hechos: {}, alternativas: {}, perfil: {}, ingredientes: {}, valoraciones: {}, semanas: {}, compra: {}, pesos: [], actividad: {},
 };
 let objetivo; // kcal diarias del menú; se recalcula en cada render
 
@@ -35,7 +36,8 @@ function guardarEstado() {
 // ---------- Utilidades ----------
 const esc = (s) => String(s).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]);
 const r0 = (n) => Math.round(n);
-const miles = (n) => r0(n).toLocaleString('es-ES');
+// Con punto de miles también en números de 4 cifras (5.000), que es como se escribe a mano.
+const miles = (n) => r0(n).toLocaleString('es-ES', { useGrouping: 'always' });
 const fechaClave = (d) => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
 const leerFecha = (s) => {
   const [a, m, d] = s.split('-').map(Number);
@@ -74,8 +76,21 @@ function porcion(receta, kcalMeta = objetivo * REPARTO[receta.tipo]) {
   return porciones.get(clave);
 }
 
-function porcionesDia(dia) {
-  const p = Object.fromEntries(TIPOS.map((t) => [t.id, porcion(recetaPorId[dia[t.id]])]));
+// Kcal que se suman al día por la actividad apuntada y a qué comidas van.
+function extraActividad(fecha) {
+  const act = fecha && estado.actividad[fecha];
+  if (!act) return { kcal: 0, comidas: [], calculo: null };
+  const calculo = kcalActividad(perfil(), act);
+  const comidas = act.comidas || [];
+  return { kcal: comidas.length ? calculo.devuelto : 0, comidas, calculo };
+}
+
+// Con fecha, suma la actividad de ese día repartida entre las comidas que quedaban por hacer.
+function porcionesDia(dia, fecha = null) {
+  const extra = extraActividad(fecha);
+  const parte = extra.comidas.reduce((s, t) => s + REPARTO[t], 0);
+  const meta = (t) => objetivo * REPARTO[t] + (extra.comidas.includes(t) ? (extra.kcal * REPARTO[t]) / parte : 0);
+  const p = Object.fromEntries(TIPOS.map((t) => [t.id, porcion(recetaPorId[dia[t.id]], meta(t.id))]));
   let total = sumar(Object.values(p).map((x) => x.total));
   // Si el redondeo deja el día por debajo del mínimo, la comida lo compensa.
   const minimo = perfil().kcal_minimo;
@@ -227,6 +242,82 @@ function macros(t, clase = '') {
 }
 
 // ---------- Componentes ----------
+// Ingrediente de una receta; si tiene sustitutos, al tocarlo se despliegan con su cantidad equivalente.
+function filaIngrediente(id, g) {
+  const nombre = esc(alimentos[id].nombre);
+  const cant = esc(cantidad(id, g));
+  const eq = NO_VALORABLES.has(id) ? [] : equivalentes(id, g, alimentos).filter((e) => !prohibido(e.id));
+  if (!eq.length) return `<li><span>${nombre}</span><span class="cant">${cant}</span></li>`;
+  return `<li class="con-sustitutos">
+    <details class="sustitutos">
+      <summary><span>${nombre}</span><span class="cant">${cant}</span><span class="cambiar" aria-hidden="true">⇄</span><span class="sr">Ver sustitutos</span></summary>
+      <p class="nota">Lo puedes cambiar por${GRUPOS[alimentos[id].grupo].gramoAGramo ? ' otra verdura en la misma cantidad' : ' (mismas calorías)'}:</p>
+      <ul>${eq.map((e) => `<li><span>${esc(alimentos[e.id].nombre)}</span><span class="cant">${esc(cantidad(e.id, e.gramos))}</span></li>`).join('')}</ul>
+    </details>
+  </li>`;
+}
+
+function tarjetaActividad(fecha) {
+  const act = estado.actividad[fecha] || {};
+  const extra = extraActividad(fecha);
+  const ejercicios = act.ejercicios || [];
+  const resumen = [
+    act.pasos ? `${miles(act.pasos)} pasos` : '',
+    ...ejercicios.map((e) => `${EJERCICIOS[e.tipo].nombre} ${e.min} min`),
+  ].filter(Boolean);
+  const pasosBase = (ACTIVIDAD[perfil().actividad] || ACTIVIDAD.sedentaria).pasos;
+  let explicacion = '';
+  if (extra.calculo) {
+    const { gastado, devuelto } = extra.calculo;
+    if (gastado < 1) explicacion = `<p>Hasta ${miles(pasosBase)} pasos ya están contados en tu actividad diaria, así que hoy no se suma nada.</p>`;
+    else if (!extra.comidas.length)
+      explicacion = `<p>Has gastado ≈ <b>${miles(gastado)} kcal</b> de más, pero ya habías hecho todas las comidas: hoy no se suma nada.</p>`;
+    else
+      explicacion = `<p>Has gastado ≈ <b>${miles(gastado)} kcal</b> de más. Te sumamos ${devuelto < gastado * ACTIVIDAD_DEVUELTA ? 'una parte' : 'la mitad'} (<b>${miles(devuelto)} kcal</b>) a ${new Intl.ListFormat('es').format(extra.comidas.map((t) => tipoDe(t).nombre.toLowerCase()))}: así no pasas hambre y sigues adelgazando.</p>`;
+  }
+  return `
+    <article class="comida actividad">
+      <details data-receta="actividad">
+        <summary>
+          <span class="icono" aria-hidden="true">🚶</span>
+          <span class="titulo">
+            <small>Actividad de hoy</small>
+            <span>${resumen.length ? esc(resumen.join(' · ')) : 'Apunta tus pasos o tu ejercicio'}</span>
+          </span>
+          <span class="kcal">${extra.kcal ? `+${miles(extra.kcal)}` : '—'}<small>kcal</small></span>
+        </summary>
+        <div class="cuerpo">
+          ${explicacion}
+          <form id="form-pasos" class="form-linea">
+            <label>Pasos de hoy<input name="pasos" type="number" inputmode="numeric" min="0" max="80000" step="1" value="${act.pasos || ''}" placeholder="Ej.: 10000"></label>
+            <button type="submit">Guardar</button>
+          </form>
+          <form id="form-ejercicio" class="form-linea">
+            <label>Ejercicio<select name="tipo">${Object.entries(EJERCICIOS).map(([k, e]) => `<option value="${k}">${e.nombre}</option>`).join('')}</select></label>
+            <label class="corto">Minutos<input name="min" type="number" inputmode="numeric" min="5" max="300" step="5" required placeholder="30"></label>
+            <button type="submit">Añadir</button>
+          </form>
+          ${ejercicios.length
+            ? `<ul class="pesajes">${ejercicios
+                .map((e, i) => `<li><span>${esc(EJERCICIOS[e.tipo].nombre)}</span><b>${e.min} min</b><small></small>
+                  <button data-borrar-ejercicio="${i}" aria-label="Borrar ${esc(EJERCICIOS[e.tipo].nombre)}">✕</button></li>`)
+                .join('')}</ul>`
+            : ''}
+          <p class="nota">Las kcal se suman a las comidas que aún no has marcado como hechas. Si el móvil cuenta como pasos lo que corres o caminas, no lo apuntes también como ejercicio. Los primeros ${miles(pasosBase)} pasos ya van incluidos en tu actividad («${esc(ACTIVIDAD[perfil().actividad]?.nombre || '')}»).</p>
+        </div>
+      </details>
+    </article>`;
+}
+
+// Guarda la actividad de hoy y apunta a qué comidas (las que quedan) se suman las kcal.
+function guardarActividad(fecha, cambio) {
+  const act = { pasos: 0, ejercicios: [], ...estado.actividad[fecha], ...cambio };
+  act.comidas = TIPOS.filter((t) => !estado.hechos[fecha]?.[t.id]).map((t) => t.id);
+  estado.actividad[fecha] = act;
+  // Solo se guardan los últimos 14 días.
+  const limite = fechaClave(masDias(new Date(), -14));
+  for (const k of Object.keys(estado.actividad)) if (k < limite) delete estado.actividad[k];
+}
 function detalleReceta(receta, p) {
   let selector = '';
   // El selector solo aparece si las dos versiones encajan con tus gustos.
@@ -246,7 +337,7 @@ function detalleReceta(receta, p) {
     ${selector}
     <ul class="ingredientes">
       ${p.ingredientes
-        .map(([id, g]) => `<li><span>${esc(alimentos[id].nombre)}</span><span class="cant">${esc(cantidad(id, g))}</span></li>`)
+        .map(([id, g]) => filaIngrediente(id, g))
         .join('')}
     </ul>
     <ol class="pasos">${p.pasos.map((x) => `<li>${esc(x)}</li>`).join('')}</ol>
@@ -320,7 +411,7 @@ function vistaDia(fecha, esHoy) {
   const dia = menuSemana(lunes)[i];
   const clave = fechaClave(fecha);
   const editable = clave >= fechaClave(new Date());
-  const { porciones: p, total } = porcionesDia(dia);
+  const { porciones: p, total } = porcionesDia(dia, esHoy ? clave : null);
   const consumido = esHoy ? sumar(TIPOS.filter((t) => estado.hechos[clave]?.[t.id]).map((t) => p[t.id].total)) : null;
   const titulo = fecha.toLocaleDateString('es-ES', { weekday: 'long', day: 'numeric', month: 'long' });
   const semanaQueViene = fechaClave(lunes) > fechaClave(lunesDe(new Date()));
@@ -331,6 +422,7 @@ function vistaDia(fecha, esHoy) {
     </header>
     ${esHoy && tocaPesarse() ? '<a class="aviso-peso" href="#perfil">⚖️ <span>Toca pesarte. Mejor en ayunas y una vez por semana. <b>Apuntar peso ›</b></span></a>' : ''}
     ${resumenDia(total, consumido)}
+    ${esHoy ? tarjetaActividad(clave) : ''}
     ${TIPOS.map((t) =>
       tarjetaComida(t, recetaPorId[dia[t.id]], p[t.id], {
         fecha: esHoy ? clave : null,
@@ -496,12 +588,56 @@ function vistaRecetas() {
       <button data-filtro="todas" aria-pressed="${filtroTipo === 'todas'}">Todas (${recetas.length})</button>
       ${TIPOS.map((t) => `<button data-filtro="${t.id}" aria-pressed="${filtroTipo === t.id}">${t.nombre}</button>`).join('')}
     </div>
-    <p class="nota">Las cantidades ya están ajustadas a tus ${miles(objetivo)} kcal diarias.</p>
+    <p class="nota">Las cantidades ya están ajustadas a tus ${miles(objetivo)} kcal diarias. Toca un ingrediente con ⇄ para ver por qué cambiarlo.</p>
+    <a class="boton-ancho" href="#sustitutos">⇄ Tabla de sustitutos</a>
     <div id="lista-recetas">
       ${lista.length
         ? lista.map((r) => tarjetaComida(tipoDe(r.tipo), r, porcion(r))).join('')
         : '<p class="pie">No hay recetas que coincidan.</p>'}
     </div>`;
+}
+
+let susGrupo = 'proteina';
+let susBase = null;
+let susGramos = null;
+function vistaSustitutos() {
+  const grupo = GRUPOS[susGrupo];
+  const ids = Object.keys(alimentos)
+    .filter((id) => alimentos[id].grupo === susGrupo)
+    .sort((a, b) => alimentos[a].nombre.localeCompare(alimentos[b].nombre, 'es'));
+  const base = ids.includes(susBase) ? susBase : grupo.base[0];
+  const gramos = susGramos ?? grupo.base[1];
+  const lista = equivalentes(base, gramos, alimentos).filter((e) => !prohibido(e.id));
+  const b = totales([[base, gramos]], alimentos);
+  return `
+    <header class="cabecera">
+      <a href="#recetas" class="volver" aria-label="Volver a recetas">‹ Recetas</a>
+      <h1>Sustitutos</h1>
+    </header>
+    <p class="nota">Si no tienes algo o no te apetece, cámbialo por otro del mismo grupo en la cantidad que pone.</p>
+    <div class="chips" role="group" aria-label="Elegir grupo">
+      ${Object.entries(GRUPOS).map(([k, g]) => `<button data-sus-grupo="${k}" aria-pressed="${k === susGrupo}">${g.icono} ${g.nombre}</button>`).join('')}
+    </div>
+    <section class="tarjeta formulario">
+      <label class="ancho">Tengo en la receta
+        <select data-sus-base>${ids.map((id) => `<option value="${id}" ${id === base ? 'selected' : ''}>${esc(alimentos[id].nombre)}</option>`).join('')}</select>
+      </label>
+      <label>Cantidad (g o ml)<input type="number" inputmode="numeric" min="1" max="2000" data-sus-gramos value="${gramos}"></label>
+      <p class="equivale"><b>${miles(b.kcal)}</b> kcal · <b>${r0(b.p)}</b> g proteína</p>
+    </section>
+    <section class="tarjeta">
+      <h2>Equivale a</h2>
+      <ul class="tabla-sust">
+        <li class="cabeza"><span>Alimento</span><span>Cantidad</span><span>Proteína</span></li>
+        ${lista
+          .map((e) => `<li><span>${esc(alimentos[e.id].nombre)}</span><span class="cant">${esc(cantidad(e.id, e.gramos))}</span><span class="cant">${r0(e.p)} g</span></li>`)
+          .join('')}
+      </ul>
+      <p class="nota">${grupo.gramoAGramo
+        ? 'Las verduras casi no tienen calorías: se cambian gramo a gramo.'
+        : 'Todas tienen las mismas calorías. Si cambias carne o pescado, mira la proteína: si baja mucho, compénsalo en otra comida (un yogur proteico, por ejemplo).'}
+      Lo que has marcado con 🚫 no aparece.</p>
+    </section>`;
 }
 
 function vistaGustos() {
@@ -738,6 +874,7 @@ function render() {
     const ok = fecha >= desde && fecha < masDias(desde, 14);
     html = ok ? vistaDia(fecha, fechaClave(fecha) === fechaClave(hoy)) : vistaDia(hoy, true);
   } else if (ruta === 'recetas') html = vistaRecetas();
+  else if (ruta === 'sustitutos') html = vistaSustitutos();
   else if (ruta === 'gustos') html = vistaGustos();
   else if (ruta === 'perfil') html = vistaPerfil();
   else html = vistaDia(hoy, true);
@@ -746,13 +883,13 @@ function render() {
     html = `<div class="alerta"><b>Revisar recetas:</b><ul>${problemas.map((p) => `<li>${esc(p)}</li>`).join('')}</ul></div>` + html;
   }
   // Conserva qué tarjetas estaban abiertas al volver a pintar.
-  const abiertas = new Set([...vista.querySelectorAll('details[open]')].map((d) => d.dataset.receta));
+  const abiertas = new Set([...vista.querySelectorAll('details[data-receta][open]')].map((d) => d.dataset.receta));
   vista.innerHTML = html;
-  vista.querySelectorAll('details').forEach((d) => {
+  vista.querySelectorAll('details[data-receta]').forEach((d) => {
     if (abiertas.has(d.dataset.receta)) d.open = true;
   });
 
-  const activa = ruta === 'dia' || ruta === 'compra' ? 'semana' : ruta || 'hoy';
+  const activa = { dia: 'semana', compra: 'semana', sustitutos: 'recetas' }[ruta] || ruta || 'hoy';
   document.querySelectorAll('nav a').forEach((a) => a.setAttribute('aria-current', a.dataset.ruta === activa ? 'page' : 'false'));
 }
 
@@ -764,6 +901,18 @@ vista.addEventListener('change', (e) => {
     estado.hechos[f] = { ...estado.hechos[f], [el.dataset.hecho]: el.checked };
     guardarEstado();
     render();
+  } else if ('susBase' in el.dataset) {
+    susBase = el.value;
+    // Al cambiar de alimento, se propone la cantidad de una ración típica de ese alimento.
+    const ud = alimentos[susBase].ud;
+    susGramos = ud || GRUPOS[susGrupo].base[1];
+    render();
+  } else if ('susGramos' in el.dataset) {
+    const g = Number(el.value);
+    if (g > 0) {
+      susGramos = Math.round(g);
+      render();
+    }
   } else if (el.dataset.comprado) {
     const s = el.dataset.semana;
     estado.compra[s] = { ...estado.compra[s], [el.dataset.comprado]: el.checked };
@@ -786,13 +935,24 @@ function alternar(mapa, id, valor) {
 }
 
 vista.addEventListener('submit', (e) => {
-  if (e.target.id !== 'form-peso') return;
+  const form = e.target;
+  if (!['form-peso', 'form-pasos', 'form-ejercicio'].includes(form.id)) return;
   e.preventDefault();
-  const datos = new FormData(e.target);
-  const kg = parseFloat(String(datos.get('kg')).replace(',', '.'));
-  const fecha = datos.get('fecha');
-  if (!Number.isFinite(kg) || !fecha) return;
-  registrarPeso(fecha, Math.round(kg * 10) / 10);
+  const datos = new FormData(form);
+  const hoy = fechaClave(new Date());
+  if (form.id === 'form-peso') {
+    const kg = parseFloat(String(datos.get('kg')).replace(',', '.'));
+    const fecha = datos.get('fecha');
+    if (!Number.isFinite(kg) || !fecha) return;
+    registrarPeso(fecha, Math.round(kg * 10) / 10);
+  } else if (form.id === 'form-pasos') {
+    guardarActividad(hoy, { pasos: Math.max(0, Math.round(Number(datos.get('pasos')) || 0)) });
+  } else {
+    const min = Math.round(Number(datos.get('min')));
+    if (!(min > 0)) return;
+    const ejercicios = [...(estado.actividad[hoy]?.ejercicios || []), { tipo: datos.get('tipo'), min }];
+    guardarActividad(hoy, { ejercicios });
+  }
   guardarEstado();
   render();
 });
@@ -815,6 +975,14 @@ vista.addEventListener('click', (e) => {
   if (d.borrarPeso) {
     if (!confirm('¿Borrar este pesaje?')) return;
     borrarPeso(d.borrarPeso);
+  } else if (d.borrarEjercicio) {
+    const hoy = fechaClave(new Date());
+    const ejercicios = (estado.actividad[hoy]?.ejercicios || []).filter((_, i) => i !== Number(d.borrarEjercicio));
+    guardarActividad(hoy, { ejercicios });
+  } else if (d.susGrupo) {
+    [susGrupo, susBase, susGramos] = [d.susGrupo, null, null];
+    render();
+    return;
   } else if (d.alt) estado.alternativas[d.alt] = d.valor === '1';
   else if (d.gusto) alternar(estado.ingredientes, d.gusto, d.valor);
   else if (d.valorar) alternar(estado.valoraciones, d.valorar, d.valor);

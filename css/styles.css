@@ -260,6 +260,39 @@ input[type="search"], .formulario input, .formulario select {
 .pesajes small { color: var(--suave); text-align: right; }
 .pesajes button { border: 0; background: transparent; color: var(--suave); width: 40px; height: 36px; cursor: pointer; }
 
+/* Sustitutos */
+.ingredientes li.con-sustitutos { display: block; }
+.sustitutos summary { display: flex; gap: 12px; padding: 0; align-items: center; }
+.sustitutos summary > span:first-child { flex: 1; }
+.sustitutos .cambiar {
+  flex: none; width: 26px; height: 26px; border-radius: 50%; display: grid; place-items: center;
+  background: var(--acento-suave); color: var(--acento); font-size: 0.85rem; font-weight: 700;
+}
+.sustitutos[open] .cambiar { background: var(--acento); color: var(--superficie); }
+.sustitutos .nota { margin: 8px 0 2px; }
+.sustitutos ul { list-style: none; margin: 0 0 4px; padding: 0 0 0 12px; border-left: 2px solid var(--acento-suave); }
+.sustitutos ul li { display: flex; justify-content: space-between; gap: 12px; padding: 4px 0; font-size: 0.9rem; border: 0; }
+.tabla-sust { list-style: none; padding: 0; margin: 0 0 10px; }
+.tabla-sust li { display: grid; grid-template-columns: 1fr auto 64px; gap: 10px; padding: 7px 0; border-bottom: 1px solid var(--borde); font-size: 0.95rem; }
+.tabla-sust .cabeza { font-size: 0.78rem; color: var(--suave); text-transform: uppercase; letter-spacing: 0.04em; }
+.tabla-sust li > span:not(:first-child) { text-align: right; }
+.equivale { grid-column: 1 / -1; margin: 0; color: var(--suave); font-size: 0.9rem; }
+.equivale b { color: var(--texto); }
+
+/* Actividad del día */
+.actividad .cuerpo p:first-child { margin-top: 0; }
+.form-linea { display: grid; grid-template-columns: 1fr auto; gap: 10px; align-items: end; margin: 10px 0; }
+.form-linea:has(.corto) { grid-template-columns: 1fr 80px auto; }
+.form-linea label { font-size: 0.85rem; color: var(--suave); min-width: 0; }
+.form-linea input, .form-linea select {
+  display: block; width: 100%; margin-top: 4px; padding: 10px 12px; border-radius: 12px;
+  border: 1px solid var(--borde); background: var(--superficie); color: var(--texto);
+}
+.form-linea button {
+  border: 0; border-radius: 12px; padding: 11px 14px; background: var(--acento); color: var(--superficie);
+  font-weight: 600; cursor: pointer;
+}
+
 .alerta { background: var(--aviso-suave); color: var(--aviso); border-radius: 12px; padding: 12px 16px; margin-bottom: 16px; font-size: 0.9rem; }
 .alerta ul { margin: 6px 0 0; padding-left: 18px; }
 

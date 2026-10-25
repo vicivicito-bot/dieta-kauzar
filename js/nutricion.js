@@ -8,11 +8,41 @@ export const TIPOS = [
   { id: 'cena', nombre: 'Cena', icono: '🌙' },
 ];
 
+// pasos: los que ya cuenta ese nivel en un día normal; solo los de más suman kcal.
 export const ACTIVIDAD = {
-  sedentaria: { nombre: 'Sedentaria (oficina, < 5.000 pasos)', factor: 1.2 },
-  ligera: { nombre: 'Ligera (≈ 8.000 pasos o 1-3 días de ejercicio)', factor: 1.375 },
-  moderada: { nombre: 'Moderada (3-5 días de ejercicio)', factor: 1.55 },
-  alta: { nombre: 'Alta (6-7 días de ejercicio)', factor: 1.725 },
+  sedentaria: { nombre: 'Sedentaria (oficina, < 5.000 pasos)', factor: 1.2, pasos: 5000 },
+  ligera: { nombre: 'Ligera (≈ 8.000 pasos o 1-3 días de ejercicio)', factor: 1.375, pasos: 8000 },
+  moderada: { nombre: 'Moderada (3-5 días de ejercicio)', factor: 1.55, pasos: 9000 },
+  alta: { nombre: 'Alta (6-7 días de ejercicio)', factor: 1.725, pasos: 10000 },
+};
+
+// Gasto de cada ejercicio en METs (Compendium of Physical Activities, valores típicos).
+// Caminar no está: se apunta con los pasos.
+export const EJERCICIOS = {
+  correr: { nombre: 'Correr', met: 9 },
+  bici: { nombre: 'Bici o spinning', met: 7 },
+  nadar: { nombre: 'Nadar', met: 6 },
+  pesas: { nombre: 'Gimnasio (pesas)', met: 5 },
+  eliptica: { nombre: 'Elíptica', met: 5 },
+  clases: { nombre: 'Zumba, aeróbic o baile', met: 6.5 },
+  raqueta: { nombre: 'Pádel o tenis', met: 7 },
+  yoga: { nombre: 'Yoga o pilates', met: 3 },
+};
+
+// Del gasto extra, cuánto se suma al menú: la mitad, con tope, para seguir en déficit.
+export const ACTIVIDAD_DEVUELTA = 0.5;
+export const ACTIVIDAD_TOPE_KCAL = 400;
+
+// Grupos de alimentos que se pueden cambiar entre sí.
+// Las verduras se cambian gramo a gramo (casi no tienen kcal); el resto, a igualdad de kcal.
+export const GRUPOS = {
+  proteina: { nombre: 'Carnes, pescados y huevos', icono: '🍗', base: ['pollo', 100] },
+  hidratos: { nombre: 'Cereales, pan y patata', icono: '🍚', base: ['arroz', 100] },
+  legumbre: { nombre: 'Legumbres', icono: '🫘', base: ['lentejas', 150] },
+  fruta: { nombre: 'Fruta', icono: '🍎', base: ['manzana', 130] },
+  lacteo: { nombre: 'Lácteos y bebidas', icono: '🥛', base: ['yogur_0', 125] },
+  grasa: { nombre: 'Grasas y frutos secos', icono: '🥑', base: ['almendras', 10] },
+  verdura: { nombre: 'Verduras', icono: '🥦', base: ['calabacin', 150], gramoAGramo: true },
 };
 
 // Déficit diario según lo rápido que quiera ir (7.700 kcal ≈ 1 kg).
@@ -106,6 +136,35 @@ export function escalar(ingredientes, kcalMeta, alimentos) {
     x.g = g < 20 ? Math.max(1, Math.round(g)) : Math.round(g / 5) * 5;
   }
   return resultado.map((x) => [x.id, x.g]);
+}
+
+// Cantidad de cada alimento del mismo grupo que equivale a `gramos` de `id`.
+export function equivalentes(id, gramos, alimentos) {
+  const a = alimentos[id];
+  const grupo = GRUPOS[a?.grupo];
+  if (!grupo) return [];
+  return Object.entries(alimentos)
+    .filter(([otro, b]) => otro !== id && b.grupo === a.grupo && b.kcal > 0)
+    .map(([otro, b]) => {
+      const g = grupo.gramoAGramo ? gramos : (gramos * a.kcal) / b.kcal;
+      const redondo = g < 20 ? Math.max(1, Math.round(g)) : Math.round(g / 5) * 5;
+      return { id: otro, gramos: redondo, ...totales([[otro, redondo]], alimentos) };
+    })
+    .sort((x, y) => x.gramos - y.gramos);
+}
+
+// Kcal gastadas de más en el día: pasos por encima de los de su nivel de actividad y ejercicios.
+export function kcalActividad(perfil, { pasos = 0, ejercicios = [] } = {}) {
+  const base = (ACTIVIDAD[perfil.actividad] || ACTIVIDAD.sedentaria).pasos;
+  // ≈ 0,5 kcal por kg de peso cada 1.000 pasos.
+  const porPasos = Math.max(0, pasos - base) * perfil.peso_kg * 0.0005;
+  // Solo lo que se gasta por encima de estar en reposo (MET − 1).
+  const porEjercicio = ejercicios.reduce(
+    (s, e) => s + ((EJERCICIOS[e.tipo]?.met || 1) - 1) * perfil.peso_kg * (e.min / 60),
+    0,
+  );
+  const gastado = porPasos + porEjercicio;
+  return { porPasos, porEjercicio, gastado, devuelto: Math.min(ACTIVIDAD_TOPE_KCAL, gastado * ACTIVIDAD_DEVUELTA) };
 }
 
 // Simula semana a semana, recalculando el gasto según baja el peso.

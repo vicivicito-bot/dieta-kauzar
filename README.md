@@ -1,6 +1,6 @@
 # Dieta Kauzar
 
-App web instalable en el móvil (PWA) con mis menús: cada semana genera un menú distinto según mis gustos, ajusta las cantidades a mis calorías, hace la lista de la compra, registra mi peso con una gráfica y calcula el plazo hasta el objetivo. Funciona sin conexión una vez abierta.
+App web instalable en el móvil (PWA) con mis menús: cada semana genera un menú distinto según mis gustos, ajusta las cantidades a mis calorías, hace la lista de la compra, registra mi peso con una gráfica, propone sustitutos equivalentes, suma kcal cuando camino o hago ejercicio y calcula el plazo hasta el objetivo. Funciona sin conexión una vez abierta.
 
 ## Qué hay
 
