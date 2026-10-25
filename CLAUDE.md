@@ -36,8 +36,8 @@ PWA de dieta personal, instalada en el móvil de la usuaria. Habla con ella en e
 ## Próximos pasos (fases acordadas)
 
 1. ~~Fase 1: menú del día y de la semana, recetas, alternativa al salmón, calculadora~~ ✅
-2. Fase 2: registro de peso semanal (en ayunas) con gráfica y recálculo de kcal.
-3. Fase 3: ~~generador de menús, botón "cambiar", gustos y vetos, cantidades según sus kcal~~ ✅ (oct 2026). Falta: lista de la compra por secciones (`seccion` ya está en `alimentos.json`).
+2. ~~Fase 2: registro de peso semanal (en ayunas) con gráfica y recálculo de kcal~~ ✅ (en "Mis números"; `estado.pesos`, el último pesaje pasa a `peso_kg`; aviso en Hoy si hace ≥ 7 días).
+3. Fase 3: ~~generador de menús, botón "cambiar", gustos y vetos, cantidades según sus kcal~~ ✅ (oct 2026). Lista de la compra ✅ (`#compra`, por `seccion`; `seco` en alimentos cocidos para comprar en seco; marcados en `estado.compra`).
 4. Fase 4: tabla de sustitutos equivalentes y ajuste de kcal por pasos o ejercicio.
 
 Pendiente de preguntarle: qué recetas le han gustado o no tras usarla unos días (ahora puede marcarlas ella con ❤️/🚫).

@@ -9,7 +9,14 @@ const DIAS_CORTOS = ['Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb', 'Dom'];
 const NO_VALORABLES = new Set(['aove', 'cafe', 'especias', 'edulcorante', 'caldo']);
 
 let alimentos, recetas, recetaPorId, perfilBase, problemas;
-let estado = { hechos: {}, alternativas: {}, perfil: {}, ingredientes: {}, valoraciones: {}, semanas: {} };
+// Lista de la compra: orden de los pasillos y cosas que no se apuntan (se tienen en casa).
+const SECCIONES = ['Frutería', 'Carne y pescado', 'Charcutería', 'Huevos y lácteos', 'Panadería', 'Despensa', 'Congelados'];
+const NO_COMPRAR = new Set(['cafe', 'especias', 'edulcorante']);
+const LIQUIDOS = new Set(['bebida_soja', 'leche_desnatada', 'caldo']);
+
+let estado = {
+  hechos: {}, alternativas: {}, perfil: {}, ingredientes: {}, valoraciones: {}, semanas: {}, compra: {}, pesos: [],
+};
 let objetivo; // kcal diarias del menú; se recalcula en cada render
 
 // ---------- Almacenamiento (puede fallar en modo privado) ----------
@@ -163,12 +170,28 @@ function menuSemana(lunes) {
     // Solo se guardan la semana anterior, la actual y la siguiente.
     const limite = fechaClave(masDias(lunesDe(new Date()), -7));
     for (const k of Object.keys(estado.semanas)) if (k < limite) delete estado.semanas[k];
+    for (const k of Object.keys(estado.compra)) if (k < limite) delete estado.compra[k];
     guardarEstado();
   }
   return estado.semanas[clave];
 }
 
+// ---------- Registro de peso ----------
+// Un pesaje por fecha. El más reciente pasa a ser el peso actual, y con él se recalculan las kcal.
+function registrarPeso(fecha, kg) {
+  estado.pesos = [...estado.pesos.filter((x) => x.fecha !== fecha), { fecha, kg }].sort((a, b) => (a.fecha < b.fecha ? -1 : 1));
+  estado.perfil.peso_kg = estado.pesos.at(-1).kg;
+}
+function borrarPeso(fecha) {
+  estado.pesos = estado.pesos.filter((x) => x.fecha !== fecha);
+  if (estado.pesos.length) estado.perfil.peso_kg = estado.pesos.at(-1).kg;
+}
+const diasEntre = (a, b) => Math.round((leerFecha(b) - leerFecha(a)) / 86400000);
+const tocaPesarse = () => !estado.pesos.length || diasEntre(estado.pesos.at(-1).fecha, fechaClave(new Date())) >= 7;
+
 // ---------- Presentación ----------
+const decimal = (n, d = 1) => n.toLocaleString('es-ES', { minimumFractionDigits: d, maximumFractionDigits: d });
+const fechaCorta = (clave) => leerFecha(clave).toLocaleDateString('es-ES', { day: 'numeric', month: 'short' });
 function cantidad(id, gramos) {
   const a = alimentos[id];
   if (id === 'cafe') return '1 taza';
@@ -306,6 +329,7 @@ function vistaDia(fecha, esHoy) {
       ${esHoy ? '' : `<a href="#semana${semanaQueViene ? '/1' : ''}" class="volver" aria-label="Volver a la semana">‹ Semana</a>`}
       <h1>${esc(esHoy ? `Hoy, ${titulo}` : titulo)}</h1>
     </header>
+    ${esHoy && tocaPesarse() ? '<a class="aviso-peso" href="#perfil">⚖️ <span>Toca pesarte. Mejor en ayunas y una vez por semana. <b>Apuntar peso ›</b></span></a>' : ''}
     ${resumenDia(total, consumido)}
     ${TIPOS.map((t) =>
       tarjetaComida(t, recetaPorId[dia[t.id]], p[t.id], {
@@ -348,8 +372,111 @@ function vistaSemana(desplazamiento) {
         .join('')}
     </ul>
     <p class="pie">Comida arriba, cena debajo. Toca un día para verlo completo y cambiar platos.</p>
+    <a class="boton-ancho" href="#compra${desplazamiento ? '/1' : ''}">🛒 Lista de la compra</a>
     <button class="boton-ancho" data-rehacer="${fechaClave(lunes)}">🔀 Hacer otro menú para esta semana</button>
     <p class="pie">${desplazamiento === 0 ? 'Cambia los platos de hoy al domingo; los días pasados se quedan como están.' : 'Cambia todos los platos de esa semana.'}</p>`;
+}
+
+function cantidadCompra(id, g) {
+  const a = alimentos[id];
+  const liquido = LIQUIDOS.has(id);
+  const peso = (x) =>
+    x >= 1000
+      ? `${decimal(x / 1000)} ${liquido ? 'l' : 'kg'}`
+      : `${x >= 100 ? Math.round(x / 10) * 10 : Math.round(x)} ${liquido ? 'ml' : 'g'}`;
+  if (a.ud) {
+    const n = Math.max(1, Math.ceil(g / a.ud - 0.15));
+    return `${n} ${n === 1 ? 'ud' : 'uds'} (${peso(g)})`;
+  }
+  if (a.seco) return `${peso(g * a.seco)} en seco`;
+  return peso(g);
+}
+
+// Suma lo que piden los menús, de hoy al domingo (o la semana entera si es la que viene).
+function listaCompra(lunes, desde) {
+  const menu = menuSemana(lunes);
+  const suma = {};
+  for (let i = desde; i < 7; i++) {
+    for (const p of Object.values(porcionesDia(menu[i]).porciones)) {
+      for (const [id, g] of p.ingredientes) if (!NO_COMPRAR.has(id)) suma[id] = (suma[id] || 0) + g;
+    }
+  }
+  // El arroz, la pasta… se compran en seco: fuera el "(cocido)" del nombre.
+  const nombre = (id) => (alimentos[id].seco ? alimentos[id].nombre.replace(/\s*\(cocid[ao]\)/, '') : alimentos[id].nombre);
+  return SECCIONES.map((s) => ({
+    seccion: s,
+    items: Object.keys(suma)
+      .filter((id) => alimentos[id].seccion === s)
+      .sort((x, y) => nombre(x).localeCompare(nombre(y), 'es'))
+      .map((id) => ({ id, nombre: nombre(id), cantidad: cantidadCompra(id, suma[id]) })),
+  })).filter((s) => s.items.length);
+}
+
+function datosCompra(desplazamiento) {
+  const hoy = new Date();
+  const lunes = masDias(lunesDe(hoy), desplazamiento * 7);
+  const desde = desplazamiento === 0 ? indiceDia(hoy) : 0;
+  return { lunes, desde, clave: fechaClave(lunes), secciones: listaCompra(lunes, desde) };
+}
+
+function vistaCompra(desplazamiento) {
+  const { lunes, desde, clave, secciones } = datosCompra(desplazamiento);
+  const marcados = estado.compra[clave] || {};
+  const todos = secciones.flatMap((s) => s.items);
+  const faltan = todos.filter((x) => !marcados[x.id]).length;
+  const inicio = masDias(lunes, desde).toLocaleDateString('es-ES', { weekday: 'long', day: 'numeric' });
+  const fin = masDias(lunes, 6).toLocaleDateString('es-ES', { weekday: 'long', day: 'numeric' });
+  return `
+    <header class="cabecera">
+      <a href="#semana${desplazamiento ? '/1' : ''}" class="volver" aria-label="Volver a la semana">‹ Semana</a>
+      <h1>Lista de la compra</h1>
+    </header>
+    <div class="chips" role="group" aria-label="Elegir semana">
+      <a href="#compra" aria-pressed="${desplazamiento === 0}">Esta semana</a>
+      <a href="#compra/1" aria-pressed="${desplazamiento === 1}">La que viene</a>
+    </div>
+    <p class="nota">${desde === 6
+      ? `Solo para hoy, ${esc(inicio)}. ¿Compras para la semana que viene? Toca «La que viene».`
+      : `Para los menús del ${esc(inicio)} al ${esc(fin)}, con tus cantidades.`} ${faltan ? `Te faltan <b>${faltan}</b> de ${todos.length}.` : '¡Lo tienes todo!'}</p>
+    ${secciones
+      .map(
+        (s) => `<section class="tarjeta">
+          <h2>${esc(s.seccion)}</h2>
+          <ul class="compra">
+            ${s.items
+              .map(
+                (x) => `<li class="${marcados[x.id] ? 'comprado' : ''}">
+                  <label>
+                    <input type="checkbox" data-comprado="${x.id}" data-semana="${clave}" ${marcados[x.id] ? 'checked' : ''}>
+                    <span>${esc(x.nombre)}</span>
+                    <span class="cant">${esc(x.cantidad)}</span>
+                  </label>
+                </li>`,
+              )
+              .join('')}
+          </ul>
+        </section>`,
+      )
+      .join('')}
+    <button class="boton-ancho" data-compartir="${desplazamiento}">📤 Enviar la lista (lo que falta)</button>
+    <p class="pie">Café o té, especias y edulcorante no se apuntan: se supone que los tienes en casa. Si cambias platos del menú, la lista se actualiza sola.</p>`;
+}
+
+async function compartirLista(desplazamiento) {
+  const { clave, secciones } = datosCompra(desplazamiento);
+  const marcados = estado.compra[clave] || {};
+  const texto = secciones
+    .map((s) => ({ ...s, items: s.items.filter((x) => !marcados[x.id]) }))
+    .filter((s) => s.items.length)
+    .map((s) => `${s.seccion.toUpperCase()}\n${s.items.map((x) => `- ${x.nombre}: ${x.cantidad}`).join('\n')}`)
+    .join('\n\n');
+  try {
+    if (navigator.share) await navigator.share({ title: 'Lista de la compra', text: texto });
+    else {
+      await navigator.clipboard.writeText(texto);
+      alert('Lista copiada. Pégala donde quieras (WhatsApp, notas…).');
+    }
+  } catch {}
 }
 
 let filtroTipo = 'todas';
@@ -432,6 +559,102 @@ function vistaGustos() {
       .join('')}`;
 }
 
+// Gráfica de línea del peso con la línea del objetivo. Tocar un punto muestra su dato.
+function graficaPeso(pesos, objetivoKg) {
+  const W = 340, H = 180, izq = 34, der = 14, arr = 14, aba = 24;
+  const kgs = pesos.map((x) => x.kg);
+  let lo = Math.floor(Math.min(...kgs, objetivoKg) - 0.5);
+  let hi = Math.ceil(Math.max(...kgs, objetivoKg) + 0.5);
+  const paso = [0.5, 1, 2, 5, 10].find((p) => (hi - lo) / p <= 4) || 20;
+  lo = Math.floor(lo / paso) * paso;
+  hi = Math.ceil(hi / paso) * paso;
+  const total = Math.max(1, diasEntre(pesos[0].fecha, pesos.at(-1).fecha));
+  const x = (f) => izq + ((W - izq - der) * diasEntre(pesos[0].fecha, f)) / total;
+  const y = (kg) => arr + ((H - arr - aba) * (hi - kg)) / (hi - lo);
+  const marcas = [];
+  for (let v = lo; v <= hi + 1e-9; v += paso) marcas.push(v);
+  const ultimo = pesos.at(-1);
+  const etiquetaDerecha = x(ultimo.fecha) > W - 60;
+  // La etiqueta del último dato va al lado contrario por el que llega la línea, para no pisarla.
+  const etiquetaDebajo = pesos.at(-2).kg >= ultimo.kg && y(ultimo.kg) + 20 < H - aba;
+  return `
+    <svg class="grafica" viewBox="0 0 ${W} ${H}" role="img"
+      aria-label="Evolución del peso: de ${decimal(pesos[0].kg)} kg el ${fechaCorta(pesos[0].fecha)} a ${decimal(ultimo.kg)} kg el ${fechaCorta(ultimo.fecha)}. Objetivo ${decimal(objetivoKg)} kg.">
+      ${marcas
+        .map((v) => `<line class="rejilla" x1="${izq}" x2="${W - der}" y1="${y(v)}" y2="${y(v)}"/>
+          <text class="eje" x="${izq - 6}" y="${y(v) + 4}" text-anchor="end">${decimal(v, paso < 1 ? 1 : 0)}</text>`)
+        .join('')}
+      <line class="meta" x1="${izq}" x2="${W - der}" y1="${y(objetivoKg)}" y2="${y(objetivoKg)}"/>
+      <text class="eje" x="${W - der}" y="${y(objetivoKg) - 5}" text-anchor="end">Objetivo ${decimal(objetivoKg)}</text>
+      <text class="eje" x="${izq}" y="${H - 6}">${fechaCorta(pesos[0].fecha)}</text>
+      <text class="eje" x="${W - der}" y="${H - 6}" text-anchor="end">${fechaCorta(ultimo.fecha)}</text>
+      <polyline class="linea" points="${pesos.map((p) => `${x(p.fecha)},${y(p.kg)}`).join(' ')}"/>
+      ${pesos.map((p) => `<circle class="punto" cx="${x(p.fecha)}" cy="${y(p.kg)}" r="4"/>`).join('')}
+      <text class="valor" x="${x(ultimo.fecha) + (etiquetaDerecha ? -8 : 8)}" y="${y(ultimo.kg) + (etiquetaDebajo ? 18 : -9)}" text-anchor="${etiquetaDerecha ? 'end' : 'start'}">${decimal(ultimo.kg)} kg</text>
+      ${pesos
+        .map((p) => `<circle class="toque" cx="${x(p.fecha)}" cy="${y(p.kg)}" r="14" data-punto="${p.fecha}" data-kg="${p.kg}">
+          <title>${fechaCorta(p.fecha)}: ${decimal(p.kg)} kg</title></circle>`)
+        .join('')}
+    </svg>`;
+}
+
+function seccionPeso(p, kcalDia) {
+  const pesos = estado.pesos;
+  const hoy = fechaClave(new Date());
+  let resumen = '';
+  if (pesos.length >= 2) {
+    const inicio = pesos[0];
+    const ultimo = pesos.at(-1);
+    const cambio = ultimo.kg - inicio.kg;
+    const semanas = diasEntre(inicio.fecha, ultimo.fecha) / 7;
+    const previsto = Math.max(0, ((gastoTotal(p) - kcalDia) * 7) / 7700) * 1000;
+    const faltan = ultimo.kg - p.peso_objetivo_kg;
+    resumen = `
+      <div class="numeros">
+        <div><small>Desde el ${fechaCorta(inicio.fecha)}</small><b>${cambio > 0 ? '+' : ''}${decimal(cambio)}</b> kg</div>
+        <div><small>Te faltan</small><b>${decimal(Math.max(0, faltan))}</b> kg</div>
+      </div>
+      ${semanas >= 2
+        ? `<p class="nota">Vas a ≈ <b>${r0((-cambio / semanas) * 1000)} g por semana</b>${previsto ? `; lo previsto era ≈ ${r0(previsto)} g` : ''}. ${
+            cambio >= 0
+              ? 'Si sigue sin bajar unas semanas más, lo que mejor funciona es moverse más.'
+              : 'El peso sube y baja de un día a otro: fíjate en la tendencia, no en un pesaje suelto.'
+          }</p>`
+        : ''}`;
+  }
+  return `
+    <section class="tarjeta">
+      <h2>Mi peso</h2>
+      <form id="form-peso" class="form-peso">
+        <label>Peso (kg)<input name="kg" type="number" inputmode="decimal" step="0.1" min="30" max="250" required placeholder="${decimal(p.peso_kg)}"></label>
+        <label>Fecha<input name="fecha" type="date" value="${hoy}" max="${hoy}" required></label>
+        <button type="submit">Guardar</button>
+      </form>
+      <p class="nota">Pésate en ayunas, una vez por semana y el mismo día. Al guardar, tu peso actual y tus kcal se actualizan solos.</p>
+      ${pesos.length >= 2
+        ? `${graficaPeso(pesos, p.peso_objetivo_kg)}<p class="nota lectura" id="lectura-peso" aria-live="polite">Toca un punto para ver su dato.</p>`
+        : pesos.length === 1
+          ? '<p class="nota">Con dos pesajes aparecerá aquí la gráfica.</p>'
+          : ''}
+      ${resumen}
+      ${pesos.length
+        ? `<ul class="pesajes">
+            ${pesos
+              .map((x, i) => ({ ...x, dif: i ? x.kg - pesos[i - 1].kg : null }))
+              .slice(-8)
+              .reverse()
+              .map((x) => `<li>
+                <span>${fechaCorta(x.fecha)}</span>
+                <b>${decimal(x.kg)} kg</b>
+                <small>${x.dif == null ? '' : `${x.dif > 0 ? '+' : ''}${decimal(x.dif)}`}</small>
+                <button data-borrar-peso="${x.fecha}" aria-label="Borrar el pesaje del ${fechaCorta(x.fecha)}">✕</button>
+              </li>`)
+              .join('')}
+          </ul>`
+        : ''}
+    </section>`;
+}
+
 function vistaPerfil() {
   const p = perfil();
   const mb = metabolismoBasal(p);
@@ -463,6 +686,7 @@ function vistaPerfil() {
     ${Object.keys(estado.perfil).length
       ? ''
       : '<div class="alerta">Estos son datos de ejemplo. Escribe los tuyos: se guardan solo en este móvil.</div>'}
+    ${seccionPeso(p, objetivo)}
     <section class="tarjeta formulario">
       ${campo('peso_kg', 'Peso actual (kg)', p.peso_kg, 'step="0.1" min="30" max="200"')}
       ${campo('peso_objetivo_kg', 'Peso objetivo (kg)', p.peso_objetivo_kg, 'step="0.1" min="30" max="200"')}
@@ -506,6 +730,7 @@ function render() {
   const hoy = new Date();
   let html;
   if (ruta === 'semana') html = vistaSemana(param === '1' ? 1 : 0);
+  else if (ruta === 'compra') html = vistaCompra(param === '1' ? 1 : 0);
   else if (ruta === 'dia' && /^\d{4}-\d{2}-\d{2}$/.test(param || '')) {
     const fecha = leerFecha(param);
     // Solo esta semana y la siguiente.
@@ -527,7 +752,7 @@ function render() {
     if (abiertas.has(d.dataset.receta)) d.open = true;
   });
 
-  const activa = ruta === 'dia' ? 'semana' : ruta || 'hoy';
+  const activa = ruta === 'dia' || ruta === 'compra' ? 'semana' : ruta || 'hoy';
   document.querySelectorAll('nav a').forEach((a) => a.setAttribute('aria-current', a.dataset.ruta === activa ? 'page' : 'false'));
 }
 
@@ -537,6 +762,11 @@ vista.addEventListener('change', (e) => {
   if (el.dataset.hecho) {
     const f = el.dataset.fecha;
     estado.hechos[f] = { ...estado.hechos[f], [el.dataset.hecho]: el.checked };
+    guardarEstado();
+    render();
+  } else if (el.dataset.comprado) {
+    const s = el.dataset.semana;
+    estado.compra[s] = { ...estado.compra[s], [el.dataset.comprado]: el.checked };
     guardarEstado();
     render();
   } else if (el.dataset.perfil) {
@@ -555,11 +785,37 @@ function alternar(mapa, id, valor) {
   else mapa[id] = valor;
 }
 
+vista.addEventListener('submit', (e) => {
+  if (e.target.id !== 'form-peso') return;
+  e.preventDefault();
+  const datos = new FormData(e.target);
+  const kg = parseFloat(String(datos.get('kg')).replace(',', '.'));
+  const fecha = datos.get('fecha');
+  if (!Number.isFinite(kg) || !fecha) return;
+  registrarPeso(fecha, Math.round(kg * 10) / 10);
+  guardarEstado();
+  render();
+});
+
 vista.addEventListener('click', (e) => {
+  const punto = e.target.closest('[data-punto]');
+  if (punto) {
+    const lectura = document.getElementById('lectura-peso');
+    lectura.textContent = `${fechaCorta(punto.dataset.punto)}: ${decimal(Number(punto.dataset.kg))} kg`;
+    vista.querySelectorAll('.punto').forEach((c, i) => c.classList.toggle('activo', vista.querySelectorAll('.toque')[i] === punto));
+    return;
+  }
   const boton = e.target.closest('button');
   if (!boton) return;
   const d = boton.dataset;
-  if (d.alt) estado.alternativas[d.alt] = d.valor === '1';
+  if (d.compartir) {
+    compartirLista(Number(d.compartir));
+    return;
+  }
+  if (d.borrarPeso) {
+    if (!confirm('¿Borrar este pesaje?')) return;
+    borrarPeso(d.borrarPeso);
+  } else if (d.alt) estado.alternativas[d.alt] = d.valor === '1';
   else if (d.gusto) alternar(estado.ingredientes, d.gusto, d.valor);
   else if (d.valorar) alternar(estado.valoraciones, d.valorar, d.valor);
   else if (d.cambiar) {

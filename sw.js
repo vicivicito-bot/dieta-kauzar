@@ -1,6 +1,6 @@
 // Guarda la app en el móvil para que funcione sin conexión.
 // Al cambiar cualquier archivo, sube la versión para que se actualice.
-const VERSION = 'dieta-v2';
+const VERSION = 'dieta-v3';
 const ARCHIVOS = [
   './',
   'index.html',
